@@ -1,5 +1,21 @@
 import re
-from datetime import datetime
+from datetime import date, datetime
+
+
+def parse_date(date_str: str | None) -> date | None:
+    if not date_str:
+        return None
+
+    current_year = datetime.now().year
+
+    try:
+        # Parse el mes abreviado y día (ej: "Oct 9" o "Oct 09")
+        parsed_dt = datetime.strptime(date_str.strip(), "%b %d")
+        # Asigna el año actual y retorna solo la parte date
+        return parsed_dt.replace(year=current_year).date()
+    except ValueError:
+        # En caso de que la cadena no coincida con el formato esperado
+        return None
 
 
 def format_injury_dates(injury_dates: str | None) -> str:

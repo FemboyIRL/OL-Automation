@@ -1,8 +1,33 @@
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
+from xmlrpc.client import DateTime
 
 from utils.date import format_injury_dates
+
+
+class EvaluationType(Enum):
+    PQME = "PQME"
+    PQMER = "PQMER"
+
+    @classmethod
+    def _missing_(cls, value):
+        if value is None:
+            return cls.PQME
+        return super()._missing_(value)
+
+    @classmethod
+    def from_str(
+        cls, value: str | None, default: "EvaluationType" = None
+    ) -> "EvaluationType":
+        if default is None:
+            default = cls.PQME
+
+        if value is None:
+            return default
+
+        if value == "ReEval" or "Re Eval":
+            return cls.PQMER
 
 
 class AttorneyType(Enum):
@@ -220,3 +245,28 @@ class Applicant:
             f"{pronoun_possessive} +, while {pronoun_subject.lower()} "
             f"was working for {employer} as a +."
         )
+
+
+@dataclass
+class Case:
+    applicant_name: str
+    evaluation_date: date
+    doctor: str
+    evaluation_type: EvaluationType
+
+    def __str__(self) -> str:
+        return (
+            f"Caso:\n"
+            f"  • Solicitante: {self.applicant_name}\n"
+            f"  • Fecha:       {self.evaluation_date}\n"
+            f"  • Doctor:      {self.doctor}\n"
+            f"  • Tipo Eval:   {self.evaluation_type}"
+        )
+
+    @property
+    def folder_name(self) -> str:
+        return f"{self.applicant_name}"
+
+    @property
+    def file_name(self) -> str:
+        return f"{self.applicant_name}-{self.evaluation_type}-History-{self.evaluation_date}-{self.doctor_name}.docx"
